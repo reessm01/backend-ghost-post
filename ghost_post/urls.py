@@ -24,5 +24,7 @@ admin.site.register(Post)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', index, name='homepage'),
-    path('post', add_post, name='add_post')
+    path('post', add_post, name='add_post'),
+    path('downvote/', down_vote, name='id'),
+    path('upvote/', up_vote, name='id')
 ]
