@@ -5,3 +5,4 @@ class Post(models.Model):
     is_boast = models.BooleanField(default=True)
     upvote_counts = models.IntegerField(default=0)
     downvote_counts = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)

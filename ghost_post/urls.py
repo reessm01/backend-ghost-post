@@ -19,6 +19,8 @@ from django.urls import path
 from ghost_post.views import *
 from ghost_post.models import *
 
+admin.site.register(Post)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     # path('', index, name='homepage'),

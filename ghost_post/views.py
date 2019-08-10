@@ -4,21 +4,20 @@ from ghost_post.models import *
 from ghost_post.forms import *
 
 def add_post(request, *args, **kwargs):
+    page = 'generic_form.html'
+    button_label = 'Ghost it'
+    form = PostForm()
     if request.method == 'GET':
-        page = 'generic_form.html'
-        button_label = 'Ghost it'
-        form = PostForm()
         return render(request, page, {'form': form, 'button_label': button_label})
-    # else:
-    #     form = PostForm(request.POST)
-    #     if form.is_valid():
-    #         data = form.cleaned_data
-    #         u = request.user
-    #         Recipe.objects.create(
-    #             title=data['title'],
-    #             description=data['description'],
-    #             time_rq=data['time_rq'],
-    #             instructions=data['instructions'],
-    #             author=Author.objects.get(user=u)
-    #         )
-    #     return HttpResponseRedirect(reverse('homepage'))
+    else:
+        form = PostForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            is_boast = True if data['is_boast'] == 1 else False
+            Post.objects.create(
+                text=data['text'],
+                is_boast=is_boast,
+            )
+        # return HttpResponseRedirect(reverse('homepage'))
+        message = 'Successfully saved'
+        return render(request, page, {'form': form, 'button_label': button_label, 'message': message})
