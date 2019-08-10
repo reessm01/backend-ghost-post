@@ -16,7 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from ghost_post.views import *
+from ghost_post.models import *
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     # path('', index, name='homepage'),
+    path('post', add_post, name='add_post')
 ]
