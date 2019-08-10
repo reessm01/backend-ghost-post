@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+    {% for post in posts %}
+        <div class='card mb-3'>
+            {% if post.is_boast %}
+                <div class="alert alert-success mb-0" role="alert">
+                    {{post.created_at}}
+                </div>
+            {% else %}
+                <div class="alert alert-danger mb-0" role="alert">
+                    {{post.created_at}}
+                </div>
+            {% endif %}
+            <div class='card-body'>
+                {{ post.text }}
+            </div>
+            <div class="btn-toolbar ml-3 mb-3" role="toolbar">
+            <div class="input-group mr-3">
+                    <div class="input-group-prepend">
+                        <button type="button" class="btn btn-secondary">+</button>
+                    </div>
+                    <div class="input-group-append">
+                        <div class="input-group-text" id="btnGroupAddon">{{post.upvote_counts}}</div>
+                    </div>
+                </div>
+
+            <div class="input-group">
+                    <div class="input-group-prepend">
+                        <button type="button" class="btn btn-secondary">-</button>
+                    </div>
+                    <div class="input-group-append">
+                        <div class="input-group-text" id="btnGroupAddon">{{post.downvote_counts}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}

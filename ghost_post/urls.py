@@ -23,6 +23,6 @@ admin.site.register(Post)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # path('', index, name='homepage'),
+    path('', index, name='homepage'),
     path('post', add_post, name='add_post')
 ]

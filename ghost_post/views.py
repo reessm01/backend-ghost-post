@@ -3,6 +3,13 @@ from django.shortcuts import render, HttpResponseRedirect, reverse
 from ghost_post.models import *
 from ghost_post.forms import *
 
+def index(request, *args, **kwargs):
+    page = 'index.html'
+
+    posts = Post.objects.all()
+
+    return render(request, page, {'posts': posts[::-1]})
+
 def add_post(request, *args, **kwargs):
     page = 'generic_form.html'
     button_label = 'Ghost it'
