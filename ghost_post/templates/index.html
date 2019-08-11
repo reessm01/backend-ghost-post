@@ -6,13 +6,25 @@
     {% for post in posts %}
         <div class='card mb-3'>
             {% if post.is_boast %}
-                <div class="alert alert-success mb-0" role="alert">
+                <div class="d-flex justify-content-between alert alert-success mb-0" role="alert">
                     {{post.created_at}}
+                    <form method="POST" action="delete/?id={{ post.id }}">
+                        {% csrf_token %}
+                        <button type="submit" class="close" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </form>
                 </div>
             {% else %}
-                <div class="alert alert-danger mb-0" role="alert">
-                    {{post.created_at}}
-                </div>
+            <div class="d-flex justify-content-between alert alert-danger mb-0" role="alert">
+                {{post.created_at}}
+                <form method="POST" action="delete/?id={{ post.id }}">
+                    {% csrf_token %}
+                    <button type="submit" class="close" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </form>
+            </div>
             {% endif %}
             <div class='card-body'>
                 {{ post.text }}
@@ -20,13 +32,13 @@
             <div class="btn-toolbar ml-3 mb-3" role="toolbar">
             <div class="input-group mr-3">
                     <div class="input-group-prepend">
-                        <form method="POST" action="/upvote/?id={{ post.id }}">
+                        <form method="POST" action="upvote/?id={{ post.id }}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-success">+</button>
                         </form>
                     </div>
                     <div class="input-group-prepend">
-                            <form method="POST" action="/downvote/?id={{ post.id }}">
+                            <form method="POST" action="downvote/?id={{ post.id }}">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-danger">-</button>
                             </form>

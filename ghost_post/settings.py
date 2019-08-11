@@ -58,7 +58,7 @@ ROOT_URLCONF = 'ghost_post.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'ghost_post', 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
