@@ -12,15 +12,25 @@
       integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
       crossorigin="anonymous"
     />
-    <title>Django People</title>
+    <title>Ghost Post</title>
   </head>
   <body>
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-8">
-          <h1 class="mt-2">Django People</h1>
+          <h1 class="mt-2">Ghost Post</h1>
           <hr class="mt-0 mb-4" />
-          {% block content %} {% endblock %}
+          <nav class="nav mb-3 justify-content-center">
+            <a class="nav-link" href="/">Index</a>
+            <a class="nav-link" href="post">New Post</a>
+            <a class="nav-link" href="boasts">Boasts</a>
+            <a class="nav-link" href="roasts">Roasts</a>
+            <a class="nav-link" href="topvoted">Sort by Top Voted</a>
+            <a class="nav-link" href="leastvoted">Sort by Least Voted</a>
+            
+          </nav>
+          {% block content %} 
+          {% endblock %}
         </div>
       </div>
     </div>
