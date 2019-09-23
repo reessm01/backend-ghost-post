@@ -1,63 +1,84 @@
-from django.shortcuts import render, HttpResponseRedirect, reverse, render_to_response
+from django.shortcuts import render, HttpResponseRedirect, reverse, render_to_response, HttpResponse
+from django.http import JsonResponse
+from django.core import serializers
+from django.views.generic import TemplateView
+from django.middleware.csrf import get_token
+import json
 
 from ghost_post.models import *
 from ghost_post.forms import *
 
-def index(request, *args, **kwargs):
-    page = 'index.html'
 
-    posts = Post.objects.all()
+class csrf(TemplateView):
+    def get(self, request, *args, **kwargs):
+        return JsonResponse({'csrfToken': get_token(request)})
 
-    return render(request, page, {'posts': posts[::-1]})
 
-def up_vote(request, *args, **kwargs):
-    page = 'index.html'
+class index(TemplateView):
+    def get(self, request, *args, **kwargs):
+        posts = Post.objects.all()[::-1]
+        posts_json = serializers.serialize('json', posts)
 
-    post_id = int(request.GET.get('id'))    
-    post = Post.objects.get(id=post_id)
-    post.vote_count += 1
-    post.save()
+        return HttpResponse(posts_json, content_type='application/json')
 
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-def down_vote(request, *args, **kwargs):
-    post_id = int(request.GET.get('id'))    
-    post = Post.objects.get(id=post_id)
-    post.vote_count -= 1
-    post.save()
+class up_vote(TemplateView):
+    def get(self, request, *args, **kwargs):
+        post_id = int(request.GET.get('id'))
+        post = Post.objects.get(id=post_id)
+        post.vote_count += 1
+        post.save()
 
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        return HttpResponse(status=200)
+
+
+class down_vote(TemplateView):
+    def get(self, request, *args, **kwargs):
+        post_id = int(request.GET.get('id'))
+        post = Post.objects.get(id=post_id)
+        post.vote_count -= 1
+        post.save()
+
+        return HttpResponse(status=200)
+
 
 def get_posts(is_boast):
     return Post.objects.all().filter(is_boast=is_boast)
 
-def boasts(request, *args, **kwargs):
-    page = 'index.html'
 
-    boast_posts = get_posts(True)
+class boasts(TemplateView):
+    def get(self, request, *args, **kwargs):
+        boast_posts = get_posts(True)[::-1]
+        boasts_json = serializers.serialize('json', boast_posts)
 
-    return render(request, page, {'posts': boast_posts[::-1]})
+        return HttpResponse(boasts_json, content_type='application/json')
 
-def roasts(request, *args, **kwargs):
-    page = 'index.html'
 
-    roast_posts = get_posts(False)
+class roasts(TemplateView):
+    def get(self, request, *args, **kwargs):
+        roast_posts = get_posts(False)[::-1]
+        roasts_json = serializers.serialize('json', roast_posts)
 
-    return render(request, page, {'posts': roast_posts[::-1]})
+        return HttpResponse(roasts_json, content_type='application/json')
 
-def top_voted(request, *args, **kwargs):
-    page = 'index.html'
-    posts = get_posts_conditionally(request)
-    posts = posts_by_votes(True, posts)
 
-    return render(request, page, {'posts': posts})
+class top_voted(TemplateView):
+    def get(self, request, *args, **kwargs):
+        posts = get_posts_conditionally(request)
+        posts = posts_by_votes(True, posts)
+        posts_json = serializers.serialize('json', posts)
 
-def least_voted(request, *args, **kwargs):
-    page = 'index.html'
-    posts = get_posts_conditionally(request)
-    posts = posts_by_votes(False, posts)
+        return HttpResponse(posts_json, content_type='application/json')
 
-    return render(request, page, {'posts': posts})
+
+class least_voted(TemplateView):
+    def get(self, request, *args, **kwargs):
+        posts = get_posts_conditionally(request)
+        posts = posts_by_votes(False, posts)
+        posts_json = serializers.serialize('json', posts)
+
+        return HttpResponse(posts_json, content_type='application/json')
+
 
 def get_posts_conditionally(request):
     if 'boast' in request.path:
@@ -67,18 +88,15 @@ def get_posts_conditionally(request):
     else:
         return Post.objects.all()
 
+
 def posts_by_votes(sort_by_top, posts):
     return sorted(posts, key=lambda post: post.vote_count, reverse=sort_by_top)
 
-def add_post(request, *args, **kwargs):
-    page = 'generic_form.html'
-    button_label = 'Ghost it'
-    form = PostForm(initial={'is_boast': '1'})
-    method = 'POST'
-    if request.method == 'GET':
-        return render(request, page, {'form': form, 'button_label': button_label, 'method': method})
-    else:
-        form = PostForm(request.POST)
+
+class add_post(TemplateView):
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body.decode('utf-8'))
+        form = PostForm(data)
         if form.is_valid():
             data = form.cleaned_data
             is_boast = True if data['is_boast'] == '1' else False
@@ -88,33 +106,19 @@ def add_post(request, *args, **kwargs):
             )
 
             key = Post.objects.all()[0].random_string
-            message = 'Post successfully saved!\n If you want to delete your message later save this key {}.'.format(key)
-            return render(request, page, {'form': form, 'button_label': button_label, 'message':message})
-
-def delete_post(request, *args, **kwargs):
-    # Could not figure out why the http method delete wouldn't work, so gave up on that idea
-    post_id = int(request.GET.get('id')) if request.GET.get('id') else None
-    page = 'generic_form.html'
-    button_label = 'Delete it'
-    post = Post.objects.all().filter(id=post_id)
-    if post:
-        post_text = post[0].text
-        warning_message = 'Enter the secret string that you were given after this post was created:'
-        form = DeleteForm(request.POST)
-        if not form.is_valid():
-            form = DeleteForm(initial={'magic_string':''})
-            return render(request, page, {'form': form, 'button_label': button_label, 'warning_message': warning_message, 'post_text': post_text})
+            message = 'Post successfully saved!\n If you want to delete your message later save this key {}.'.format(
+                key)
+            return HttpResponse({'message': message}, content_type='application/json')
         else:
-            post_id = int(request.GET.get('id'))
-            if form.is_valid():
-                data = form.cleaned_data
-                post = Post.objects.get(id=post_id)
-                if post.magic_string == data['magic_string']:
-                    post.delete()
-                    return HttpResponseRedirect(reverse('homepage'))
-                else:
-                    print('this one happened')
-                    error_message = 'Incorrect magic string. Please try again.'
-                return render(request, page, {'form': form, 'button_label': button_label, 'warning_message': warning_message, 'post_text': post_text, 'error_message':error_message})
-    else:
-        return HttpResponseRedirect(reverse('homepage'))
+            return HttpResponse(status=400)
+
+
+class delete_post(TemplateView):
+    def delete(self, request, *args, **kwargs):
+        magic = request.GET.get('magic')
+        post = Post.objects.filter(magic_string=magic)
+        if post:
+            post[0].delete()
+            return HttpResponse(status=200)
+        else:
+            return HttpResponse(status=400)

@@ -15,25 +15,23 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.views.decorators.csrf import csrf_exempt
 
 from ghost_post.views import *
 from ghost_post.models import *
 
-admin.site.register(Post)
+# admin.site.register(Post)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', index, name='homepage'),
-    path('post', add_post, name='add_post'),
-    path('downvote/', down_vote, name='id'),
-    path('upvote/', up_vote, name='id'),
-    path('boasts', boasts, name='boasts'),
-    path('boasts/topvoted', top_voted, name='top_boasts'),
-    path('boasts/leastvoted', least_voted, name='least_boasts'),
-    path('roasts/topvoted', top_voted, name='top_roasts'),
-    path('roasts/leastvoted', least_voted, name='least_roasts'),
-    path('roasts', roasts, name='roasts'),
-    path('topvoted', top_voted, name='top_voted'),
-    path('leastvoted', least_voted, name='least_voted'),
-    path('delete/', delete_post, name='id')
+    path('', index.as_view(), name='homepage'),
+    path('post', csrf_exempt(add_post.as_view()), name='add_post'),
+    path('downvote/', down_vote.as_view(), name='id'),
+    path('upvote/', up_vote.as_view(), name='id'),
+    path('boasts', boasts.as_view(), name='boasts'),
+    path('roasts', roasts.as_view(), name='roasts'),
+    path('topvoted', top_voted.as_view(), name='top_voted'),
+    path('leastvoted', least_voted.as_view(), name='least_voted'),
+    path('delete/', csrf_exempt(delete_post.as_view()), name='id'),
+    path('token', csrf.as_view())
 ]
