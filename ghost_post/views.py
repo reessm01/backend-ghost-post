@@ -7,7 +7,7 @@ import json
 
 from ghost_post.models import *
 from ghost_post.forms import *
-
+from ghost_post.api.serializers import PostSerializer
 
 class csrf(TemplateView):
     def get(self, request, *args, **kwargs):
@@ -18,7 +18,7 @@ class index(TemplateView):
     def get(self, request, *args, **kwargs):
         posts = Post.objects.all()[::-1]
         posts_json = serializers.serialize('json', posts)
-
+        
         return HttpResponse(posts_json, content_type='application/json')
 
 
@@ -97,20 +97,16 @@ class add_post(TemplateView):
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body.decode('utf-8'))
         form = PostForm(data)
-        if form.is_valid():
-            data = form.cleaned_data
-            is_boast = True if data['is_boast'] == '1' else False
-            Post.objects.create(
-                text=data['text'],
-                is_boast=is_boast,
-            )
+        is_boast = True if data['is_boast'] == 0 else False
+        new_post = Post.objects.create(
+            text=data['text'],
+            is_boast=is_boast,
+        )
 
-            key = Post.objects.all()[0].random_string
-            message = 'Post successfully saved!\n If you want to delete your message later save this key {}.'.format(
-                key)
-            return HttpResponse({'message': message}, content_type='application/json')
-        else:
-            return HttpResponse(status=400)
+        new_post = serializers.serialize('json', [new_post, ])
+        print(new_post)
+        
+        return HttpResponse(new_post, content_type='application/json')
 
 
 class delete_post(TemplateView):
